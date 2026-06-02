@@ -1,0 +1,29 @@
+{
+  "name": "instagram-reels-analytics",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "fetch": "tsx agent.ts",
+    "analyze": "tsx analyze.ts",
+    "render": "tsx render.ts",
+    "report": "tsx agent.ts && tsx render.ts",
+    "report:full": "tsx agent.ts && tsx analyze.ts && tsx render.ts",
+    "reply:dry": "tsx auto-reply.ts",
+    "reply:send": "tsx auto-reply.ts -- --send",
+    "build-dm:dry": "tsx build-dm.ts",
+    "build-dm:send": "tsx build-dm.ts -- --send",
+    "render:build-dm": "tsx render-build-dm.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.1.0",
+    "@composio/core": "^0.8.1",
+    "dotenv": "^16.4.5",
+    "openai": "^6.35.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

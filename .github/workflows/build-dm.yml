@@ -1,0 +1,64 @@
+name: Build to DM bot
+
+on:
+  # Scheduled runs are DISABLED on purpose: the Cloudflare Worker
+  # (see cloudflare-worker/) is now the engine and polls every minute.
+  # Running both would double-DM people, since they keep separate state.
+  # schedule:
+  #   - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-dm
+  cancel-in-progress: false
+
+jobs:
+  build-dm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      # No agent.ts refresh here: build-dm.ts self-fetches its own lightweight
+      # list of recent posts (no insights), so it's cheap enough to run often.
+      - name: DM people who commented the keyword (live, hard-limited)
+        env:
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          # Set repo variable EMERGENT_LINK (Settings -> Secrets and variables ->
+          # Actions -> Variables) to override the fallback below.
+          EMERGENT_LINK: ${{ vars.EMERGENT_LINK || 'https://app.emergent.sh/register?ref=YOUR_REF_CODE' }}
+          KEYWORD: build
+          LIMIT: '8'
+          MAX_PER_HOUR: '10'
+          MAX_AGE_DAYS: '7'
+          SLEEP_MS: '5000'
+          REPLY_PUBLICLY: 'true'
+        run: npx tsx build-dm.ts -- --send
+
+      - name: Render Build to DM dashboard
+        run: npx tsx render-build-dm.ts
+
+      - name: Commit build-dm state + dashboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p docs
+          cp build-dm.html docs/build-dm.html
+          git add state/build-dm.json docs/build-dm.html
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            today=$(date -u +%FT%H:%MZ)
+            git commit -m "chore: build-dm state + dashboard update ${today}"
+            git pull --rebase --autostash || true
+            git push
+          fi

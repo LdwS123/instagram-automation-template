@@ -1,0 +1,61 @@
+name: Auto-reply to comments
+
+on:
+  schedule:
+    - cron: '9,39 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-reply
+  cancel-in-progress: false
+
+jobs:
+  reply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Refresh posts data
+        env:
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+        run: npx tsx agent.ts
+
+      - name: Reply to new comments (live, hard-limited)
+        env:
+          COMPOSIO_API_KEY: ${{ secrets.COMPOSIO_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-4o
+          LIMIT: '10'
+          MAX_PER_HOUR: '20'
+          SKIP_RECENT_MIN: '30'
+          SLEEP_MS: '5000'
+        run: npx tsx auto-reply.ts -- --send
+
+      - name: Render replies log
+        run: npx tsx render-replies.ts
+
+      - name: Commit replied state + replies.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          mkdir -p docs
+          cp replies.html docs/replies.html
+          git add state/replied.json docs/replies.html
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            today=$(date -u +%FT%H:%MZ)
+            git commit -m "chore: auto-reply state + log update ${today}"
+            git pull --rebase --autostash || true
+            git push
+          fi

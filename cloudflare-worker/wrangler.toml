@@ -1,0 +1,28 @@
+name = "build-dm-bot"
+main = "src/worker.ts"
+compatibility_date = "2025-05-01"
+
+# Poll every minute. Cloudflare honors short crons reliably (unlike GitHub).
+[triggers]
+crons = ["* * * * *"]
+
+# State store (dedupe + dashboard log). Create it once with:
+#   npx wrangler kv namespace create STATE
+# then paste the printed id below (replace PASTE_KV_ID_HERE).
+[[kv_namespaces]]
+binding = "STATE"
+id = "PASTE_KV_ID_HERE"
+
+# Shared knobs. Per-campaign config (keyword, link, DM copy, public replies)
+# now lives in CAMPAIGNS inside src/worker.ts — edit there to add partners.
+# COMPOSIO_API_KEY is a SECRET — set it with:
+#   npx wrangler secret put COMPOSIO_API_KEY
+[vars]
+COMPOSIO_USER_ID = "instagram-reels-analytics"
+MAX_PER_HOUR = "10"
+PER_RUN_CAP = "5"
+SCAN_POSTS = "6"
+MAX_AGE_DAYS = "7"
+REPLY_PUBLICLY = "true"
+# Polls per minute (Cloudflare cron floor is 1 min). 4 ⇒ ~15s latency.
+SUB_POLLS = "4"
