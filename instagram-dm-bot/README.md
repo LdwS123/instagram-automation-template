@@ -27,7 +27,7 @@ campaigns (anti-spam guarantee: your total DM volume stays bounded).
 You need a free [Cloudflare account](https://dash.cloudflare.com/sign-up).
 
 ```bash
-cd cloudflare-worker
+cd instagram-dm-bot
 npm install
 
 # 1. Log in (opens your browser)
@@ -45,7 +45,7 @@ npx wrangler deploy
 ```
 
 `wrangler deploy` prints your Worker URL, e.g.
-`https://build-dm-bot.<your-subdomain>.workers.dev`.
+`https://instagram-dm-bot.<your-subdomain>.workers.dev`.
 
 - Open that URL → **live dashboard** (auto-refreshes every minute, one stat
   block per campaign).

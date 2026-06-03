@@ -197,11 +197,11 @@ It runs on Cloudflare Workers (free tier) because GitHub Actions does not
 honor 1-minute cron reliably.
 
 **Detailed setup is in
-[cloudflare-worker/README.md](cloudflare-worker/README.md)** — the short
+[instagram-dm-bot/README.md](instagram-dm-bot/README.md)** — the short
 version:
 
 ```bash
-cd cloudflare-worker
+cd instagram-dm-bot
 npm install
 
 # 1. Log into Cloudflare (opens your browser)
@@ -221,20 +221,20 @@ npx wrangler deploy
 ```
 
 After deploy, `wrangler` prints your Worker URL, e.g.
-`https://build-dm-bot.<your-subdomain>.workers.dev`.
+`https://instagram-dm-bot.<your-subdomain>.workers.dev`.
 
 - Open it in a browser → **live dashboard** (auto-refreshes every minute).
 - Append `/run` to that URL → manually trigger one poll (handy for testing).
 
 **To add a new affiliate partner**, open
-[cloudflare-worker/src/worker.ts](cloudflare-worker/src/worker.ts), find
+[instagram-dm-bot/src/worker.ts](instagram-dm-bot/src/worker.ts), find
 `const CAMPAIGNS`, push a new entry (keyword, link, DM template, public
 replies), then re-run `npx wrangler deploy`. No GitHub commit needed —
 Cloudflare deploys directly from your laptop.
 
 **To tune the bot globally** (max DMs/hour, scan depth, age window…),
 edit the `[vars]` block in
-[cloudflare-worker/wrangler.toml](cloudflare-worker/wrangler.toml) and
+[instagram-dm-bot/wrangler.toml](instagram-dm-bot/wrangler.toml) and
 re-deploy.
 
 > ⚠️ The legacy GitHub Actions DM workflow
@@ -295,7 +295,7 @@ on purpose — Instagram throttles aggressive replying.
 │   ├── auto-reply.yml       # System #2
 │   └── build-dm.yml         # (disabled — Cloudflare Worker replaces it)
 │
-├── cloudflare-worker/       # System #3 — comment→DM bot
+├── instagram-dm-bot/       # System #3 — comment→DM bot
 │   ├── src/worker.ts        # Campaigns config + poll loop
 │   ├── wrangler.toml        # Bindings + tuning knobs
 │   └── README.md            # Detailed worker docs

@@ -18,7 +18,7 @@ trigger keyword — all without lifting a finger.
 |---|---------------------------------------------------|--------------------|------------------------|--------------|
 | 1 | **Daily analytics dashboard** — scores your Reels | `agent.ts`, `render.ts` | GitHub Actions    | 06:00 UTC/day |
 | 2 | **AI auto-reply** — drafts a reply to each new comment | `auto-reply.ts` | GitHub Actions       | every 30 min |
-| 3 | **Comment → DM bot** — affiliate keyword triggers | `cloudflare-worker/` | Cloudflare Workers  | every ~15 s  |
+| 3 | **Comment → DM bot** — affiliate keyword triggers | `instagram-dm-bot/` | Cloudflare Workers  | every ~15 s  |
 
 They are **fully independent**. You can run only #1 if all you want is
 analytics. You can skip #1 entirely and only ship #3. Nothing breaks.
@@ -148,7 +148,7 @@ KV namespace          ← dedupe + per-hour cap + dashboard log
 Worker URL            ← live dashboard, auto-refreshing every minute
 ```
 
-**The CAMPAIGNS array** at the top of `cloudflare-worker/src/worker.ts` is
+**The CAMPAIGNS array** at the top of `instagram-dm-bot/src/worker.ts` is
 where all the per-partnership config lives. One entry per affiliate deal:
 
 ```ts
@@ -178,7 +178,7 @@ canonical way to persist state. Each run reads "who have I already DMed",
 processes new comments, then writes back the updated set.
 
 **Live dashboard:** after deploy, the Worker URL itself
-(`https://build-dm-bot.<your-subdomain>.workers.dev`) renders an HTML
+(`https://instagram-dm-bot.<your-subdomain>.workers.dev`) renders an HTML
 dashboard showing each campaign's hourly DM count, last-matched comments,
 and current cap usage. Visit `URL/run` to manually trigger one poll
 (useful for debugging — no need to wait for the cron).
@@ -200,7 +200,7 @@ open report.html                     # boom, your dashboard
 
 To enable the GitHub Actions automations (#1 + #2), push the repo to your
 own GitHub and add `COMPOSIO_API_KEY` (and `OPENAI_API_KEY` for #2) as repo
-secrets. To enable the DM bot (#3), `cd cloudflare-worker && npx wrangler
+secrets. To enable the DM bot (#3), `cd instagram-dm-bot && npx wrangler
 deploy`. Details in SETUP.md.
 
 ---
@@ -244,7 +244,7 @@ OpenAI. Everything runs on free tiers.
 │   ├── auto-reply.yml       # System #2 cron
 │   └── build-dm.yml         # (DISABLED on purpose — Cloudflare Worker replaces it)
 │
-├── cloudflare-worker/       # System #3 — the live DM bot
+├── instagram-dm-bot/       # System #3 — the live DM bot
 │   ├── src/worker.ts        # CAMPAIGNS array + poll loop + dashboard
 │   ├── wrangler.toml        # KV binding + per-deployment tuning knobs
 │   ├── package.json
@@ -270,9 +270,9 @@ OpenAI. Everything runs on free tiers.
 | Reply more/less often                               | `cron:` in `.github/workflows/auto-reply.yml`  |
 | Change the AI reply voice                           | `buildPrompt(...)` in `auto-reply.ts`          |
 | Use a cheaper / different OpenAI model              | `OPENAI_MODEL` env var in `auto-reply.yml`     |
-| Add a new affiliate DM campaign                     | `CAMPAIGNS` array in `cloudflare-worker/src/worker.ts` |
-| Cap how many DMs/hour the bot can send              | `MAX_PER_HOUR` in `cloudflare-worker/wrangler.toml` |
-| React faster than 15s to comments                   | `SUB_POLLS` in `cloudflare-worker/wrangler.toml` (4 → 6 ⇒ ~10s, costs more API calls) |
+| Add a new affiliate DM campaign                     | `CAMPAIGNS` array in `instagram-dm-bot/src/worker.ts` |
+| Cap how many DMs/hour the bot can send              | `MAX_PER_HOUR` in `instagram-dm-bot/wrangler.toml` |
+| React faster than 15s to comments                   | `SUB_POLLS` in `instagram-dm-bot/wrangler.toml` (4 → 6 ⇒ ~10s, costs more API calls) |
 
 ---
 

@@ -2,7 +2,7 @@ name: Build to DM bot
 
 on:
   # Scheduled runs are DISABLED on purpose: the Cloudflare Worker
-  # (see cloudflare-worker/) is now the engine and polls every minute.
+  # (see instagram-dm-bot/) is now the engine and polls every minute.
   # Running both would double-DM people, since they keep separate state.
   # schedule:
   #   - cron: '*/5 * * * *'

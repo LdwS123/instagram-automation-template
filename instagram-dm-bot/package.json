@@ -1,5 +1,5 @@
 {
-  "name": "build-dm-bot-worker",
+  "name": "instagram-dm-bot-worker",
   "private": true,
   "type": "module",
   "scripts": {
